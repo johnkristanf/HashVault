@@ -12,7 +12,7 @@ interface User {
 const users = ref<User[]>([]); 
 
 const emailString = localStorage.getItem('email');
-const userEmail = emailString ? JSON.parse(emailString) : ''; // Fallback to an empty string if null
+const userEmail = emailString ? JSON.parse(emailString) : ''; 
 
 
 

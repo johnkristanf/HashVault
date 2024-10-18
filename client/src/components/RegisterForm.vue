@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { reactive, ref } from 'vue';
+import Swal from 'sweetalert2';
 
 // Define the form data interface and create a reactive object for form data
 interface FormData {
@@ -37,61 +38,86 @@ const handleSubmit = async () => {
   errorMessage.value = '';
   successMessage.value = '';
 
-  try {
+  // Show the loading spinner with SweetAlert2
+  Swal.fire({
+    title: 'Registering...',
+    text: 'Please wait while we process your registration',
+    allowOutsideClick: false,
+    showConfirmButton: false,
+    willOpen: () => {
+      Swal.showLoading();
+    }
+  });
 
+  try {
     const payload = {
       email: formData.email,
       password: formData.password
     };
 
-    console.log("payload: ", payload)
+    console.log("payload: ", payload);
 
-
-    // const response = await fetch('https://encryptify-xsb8.onrender.com/api/register', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json'
-    //   },
-
-    //   body: JSON.stringify(payload)
-
-    // });
-
-
+    // Simulate fetch request to API
     const response = await fetch('http://localhost:8080/api/register', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-
       body: JSON.stringify(payload)
-
     });
-
 
     const data = await response.json();
 
+    // Close the loading spinner
+    Swal.close();
+
     if (response.ok) {
-      successMessage.value = 'Registration successful you are now going to be redirected in login page!';
+      successMessage.value = 'Registration successful! You will be redirected to the login page.';
       formData.email = '';
       formData.password = '';
       passwordStrength.value = 0;
 
+      // Show success message with SweetAlert2
+      Swal.fire({
+        icon: 'success',
+        title: 'Registration Complete',
+        text: 'You will be redirected to the login page shortly.',
+        timer: 2000,
+        showConfirmButton: false
+      });
+
       setTimeout(() => {
-        window.location.href = '/login'
+        window.location.href = '/login';
       }, 2000);
 
     } else {
       errorMessage.value = data.message || 'Registration failed.';
       passwordStrength.value = 0;
+
+      // Show error message with SweetAlert2
+      Swal.fire({
+        icon: 'error',
+        title: 'Registration Failed',
+        text: errorMessage.value
+      });
     }
   } catch (error) {
+    // Close the loading spinner and show an error message
+    Swal.close();
     errorMessage.value = 'An error occurred. Please try again.';
     passwordStrength.value = 0;
-    console.error("Error in Register: ", error)
+    console.error("Error in Register: ", error);
+
+    // Show error message with SweetAlert2
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'An error occurred during registration. Please try again.'
+    });
   }
 };
 </script>
+
 
 <template>
   <section class="bg-gray-50 dark:bg-gray-900 h-[80%] w-[30%] flex items-center">

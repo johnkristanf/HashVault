@@ -1,11 +1,12 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
+import Swal from 'sweetalert2';
 
 // Reactive variables for the form inputs
 const email = ref('');
 const password = ref('');
-const errorMessage = ref(''); // Store any error message from the request
-const successMessage = ref(''); // Store success message if login is successful
+const errorMessage = ref('');
+const successMessage = ref('');
 
 // Handle form submission
 const handleSubmit = async () => {
@@ -13,22 +14,24 @@ const handleSubmit = async () => {
     successMessage.value = '';
 
     const payload = {
-      email: email.value,
-      password: password.value
+        email: email.value,
+        password: password.value
     };
 
-    console.log("login payload: ", payload)
-    
-    try {
-        // Send POST request using fetch API
-        // const response = await fetch('https://encryptify-xsb8.onrender.com/api/login', {
-        //     method: 'POST',
-        //     headers: {
-        //         'Content-Type': 'application/json'
-        //     },
-        //     body: JSON.stringify(payload),
-        // });
+    console.log("login payload: ", payload);
 
+    // Show SweetAlert2 loader when the login process starts
+    Swal.fire({
+        title: 'Logging in...',
+        text: 'Please wait while we process your login',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        willOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    try {
         const response = await fetch('http://localhost:8080/api/login', {
             method: 'POST',
             headers: {
@@ -38,23 +41,61 @@ const handleSubmit = async () => {
         });
 
         if (response.ok) {
-          const data = await response.json();
-          successMessage.value = 'Login successful!';
-          console.log('Login successful:', data);
+            const data = await response.json();
+            successMessage.value = 'Login successful!';
+            console.log('Login successful:', data);
 
-          localStorage.setItem('email', JSON.stringify(data));
+            // Store the email or user data in localStorage
+            localStorage.setItem('email', JSON.stringify(data));
 
-          window.location.href = '/dashboard';
+            // Close the Swal loader
+            Swal.close();
 
+            // Show success message with Swal
+            Swal.fire({
+                icon: 'success',
+                title: 'Login Successful',
+                text: 'Redirecting to the dashboard...',
+                timer: 2000,
+                showConfirmButton: false,
+            });
+
+            // Redirect to dashboard after delay
+            setTimeout(() => {
+                window.location.href = '/dashboard';
+            }, 2000);
         } else {
-          errorMessage.value = 'The credentials you entered are incorrect. Please check your details and try again.';
+            const errorData = await response.json();
+            errorMessage.value = errorData.message || 'The credentials you entered are incorrect. Please try again.';
+
+            // Close the Swal loader
+            Swal.close();
+
+            // Show error message with Swal
+            Swal.fire({
+                icon: 'error',
+                title: 'Login Failed',
+                text: errorMessage.value,
+            });
         }
     } catch (error) {
-        console.error("Error in Login: ", error)
+        console.error("Error in Login: ", error);
         errorMessage.value = 'An error occurred during login. Please try again.';
+
+        // Close the Swal loader
+        Swal.close();
+
+        // Show error message with Swal
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An error occurred during login. Please try again.',
+        });
     }
 };
 </script>
+
+
 
 <template>
   <section class="bg-gray-50 dark:bg-gray-900 h-[80%] w-[30%] flex items-center">
