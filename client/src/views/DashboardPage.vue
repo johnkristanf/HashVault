@@ -19,7 +19,7 @@ const userEmail = emailString ? JSON.parse(emailString) : '';
 const fetchUsers = async () => {
   try {
     // const response = await fetch('https://encryptify-xsb8.onrender.com/api/users');
-    const response = await fetch('http://localhost:8080/api/users');
+    const response = await fetch('https://hashvault.onrender.com/api/users');
     if (!response.ok) {
       throw new Error('Failed to fetch users');
     }
